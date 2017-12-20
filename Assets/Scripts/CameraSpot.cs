@@ -25,16 +25,28 @@ public class CameraSpot : EditorWindow
             DoShotSpot(curCam);
 
         }
-        if (GUILayout.Button("ToJson"))
+        if (GUILayout.Button("Save as Json"))
         {
             ToJson("Assets/Json/test.json");
         }
-        if (GUILayout.Button("FromJson"))
+        if (GUILayout.Button("Load as Json"))
         {
             FromJson("Assets/Json/test.json");
         }
+        ShowSpot();
     }
+    private void ShowSpot()
+    {
+        foreach (Spot s in _MyShotSpots) {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.Vector3Field("Position", s.position);
+            EditorGUILayout.Vector3Field("Euler angle", s.angle);
+            EditorGUILayout.EndHorizontal();
 
+
+        }
+
+    }
 
     #region Tools Debug and Utility
     public List<Spot> DoShotSpot(Transform _curCam)
@@ -72,15 +84,11 @@ public class CameraSpot : EditorWindow
 
 
     }
-
-    void ParseJsonToObject(string json)
-    {
-        var wrappedjsonArray = JsonUtility.FromJson<MyWrapper>(json);
-    }
+    //Utilisé pour permettre d'accéder aux listes dans json
     [Serializable]
-    private class MyWrapper
+    private class ListWrapper
     {
-        public List<Spot> spots;
+        public List<Spot> spot;
     }
     
 
@@ -89,20 +97,11 @@ public class CameraSpot : EditorWindow
     {
         Debug.Log( _MyShotSpots.Count);
         string json = "";
-        MyWrapper w = new MyWrapper();
-        w.spots = _MyShotSpots;
+        ListWrapper w = new ListWrapper
+        {
+            spot = _MyShotSpots
+        };
         json = JsonUtility.ToJson(w);
-
-       /* string json = "{\"Spot\":[";
-         for (int i=0; i < _MyShotSpots.Count; i++)
-         {
-            json += JsonUtility.ToJson(_MyShotSpots[i]);
-            if (!(i == _MyShotSpots.Count-1)) {
-                json += ",";
-            }
-            
-         }
-        json += "]}";*/
         StreamWriter file = new StreamWriter( path);
         file.Write(json);
         file.Close();
@@ -110,11 +109,9 @@ public class CameraSpot : EditorWindow
 
     private List<Spot> FromJson(string path)
     {
-
         string text = System.IO.File.ReadAllText(path);
-
-        _MyShotSpots = JsonUtility.FromJson<List<Spot>>(text);
-        Debug.Log( _MyShotSpots.Count);
+        _MyShotSpots = JsonUtility.FromJson<ListWrapper>(text).spot;
+        
         return _MyShotSpots;
     }
     #endregion
