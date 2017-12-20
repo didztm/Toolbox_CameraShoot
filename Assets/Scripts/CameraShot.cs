@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -13,7 +12,7 @@ public class CameraShot : EditorWindow
 
     #endregion
     public Transform editorCam;
-    public List<Transform> _MyShotSpots=new List<Transform>();
+    public List<Spot> _MyShotSpots=new List<Spot>();
 
     #region Public void
 
@@ -36,17 +35,21 @@ public class CameraShot : EditorWindow
             
             
         }
+        if (GUILayout.Button("ToJson"))
+        {
+            ToJson("Assets/Json/test.json");
+        }
     }
-    private void ToJson()
+    private void ToJson(string path)
     {
-
+        var stream = new FileStream(path, FileMode.CreateNew);
     }
 
-    private List<Transform> FromJson(string path) {
+    private List<Spot> FromJson(string path) {
 
        string stream = new FileStream(path, FileMode.Open).ToString();
 
-        _MyShotSpots= JsonUtility.FromJson<List<Transform>>(stream);
+        _MyShotSpots= JsonUtility.FromJson<List<Spot>>(stream);
 
 
         return _MyShotSpots;
@@ -58,12 +61,17 @@ public class CameraShot : EditorWindow
     #endregion
 
     #region Tools Debug and Utility
-    public List<Transform> DoShot(Transform _curCam)
+    public List<Spot> DoShot(Transform _curCam)
     {
         if (editorCam.position != _curCam.position && editorCam.rotation != _curCam.rotation)
         {
             editorCam = _curCam;
-            _MyShotSpots.Add(editorCam);
+            Spot spot = new Spot
+            {
+                position = _curCam.position,
+                angle = _curCam.eulerAngles
+            };
+            _MyShotSpots.Add(spot);
         }
         
         return _MyShotSpots;
@@ -84,6 +92,7 @@ public class CameraShot : EditorWindow
     }
 
     #endregion
+
 
 
 }
