@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class CameraSpot :EditorWindow
+public class CameraSpot : EditorWindow
 {
- 
-    public List<Spot> _MyShotSpots=new List<Spot>();
+
+    public List<Spot> _MyShotSpots = new List<Spot>();
 
     [MenuItem("Toolbox/CamShot")]
     public static void ShowWindow()
@@ -21,8 +22,8 @@ public class CameraSpot :EditorWindow
         {
             Transform curCam = GetEditorCamera(SceneView.GetAllSceneCameras());
 
-            DoShotSpot( curCam);
-           
+            DoShotSpot(curCam);
+
         }
         if (GUILayout.Button("ToJson"))
         {
@@ -33,7 +34,7 @@ public class CameraSpot :EditorWindow
             FromJson("Assets/Json/test.json");
         }
     }
-   
+
 
     #region Tools Debug and Utility
     public List<Spot> DoShotSpot(Transform _curCam)
@@ -43,11 +44,11 @@ public class CameraSpot :EditorWindow
             position = _curCam.position,
             angle = _curCam.eulerAngles
         };
-        
+
         _MyShotSpots.Add(spot);
-        
+
         return _MyShotSpots;
-       
+
     }
     private Transform GetEditorCamera(Camera[] _cams)
     {
@@ -55,7 +56,7 @@ public class CameraSpot :EditorWindow
         {
             if (c.cameraType == CameraType.SceneView)
             {
-                
+
                 return c.transform;
             }
         }
@@ -64,17 +65,35 @@ public class CameraSpot :EditorWindow
     }
     private void ShowListSpot() {
 
-        foreach(Spot s in _MyShotSpots)
+        foreach (Spot s in _MyShotSpots)
         {
-            Debug.Log(s.angle +" " +s.position);
+            Debug.Log(s.angle + " " + s.position);
         }
-        
+
 
     }
+
+    void ParseJsonToObject(string json)
+    {
+        var wrappedjsonArray = JsonUtility.FromJson<MyWrapper>(json);
+    }
+    [Serializable]
+    private class MyWrapper
+    {
+        public List<Spot> spots;
+    }
+    
+
+
     private void ToJson(string path)
     {
-         Debug.Log( _MyShotSpots.Count);
-        string json = "{\"Spot\":[";
+        Debug.Log( _MyShotSpots.Count);
+        string json = "";
+        MyWrapper w = new MyWrapper();
+        w.spots = _MyShotSpots;
+        json = JsonUtility.ToJson(w);
+
+       /* string json = "{\"Spot\":[";
          for (int i=0; i < _MyShotSpots.Count; i++)
          {
             json += JsonUtility.ToJson(_MyShotSpots[i]);
@@ -83,7 +102,7 @@ public class CameraSpot :EditorWindow
             }
             
          }
-        json += "]}";
+        json += "]}";*/
         StreamWriter file = new StreamWriter( path);
         file.Write(json);
         file.Close();
