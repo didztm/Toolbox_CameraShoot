@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class CameraSpot 
+public class CameraSpot :EditorWindow
 {
  
     public List<Spot> _MyShotSpots=new List<Spot>();
@@ -74,13 +74,16 @@ public class CameraSpot
     private void ToJson(string path)
     {
          Debug.Log( _MyShotSpots.Count);
-        string json = "";
-        /*foreach (Spot s in _MyShotSpots)
-        {
-           json += JsonUtility.ToJson(s);
-        }*/
-        json = JsonUtility.ToJson(_MyShotSpots);
-        
+        string json = "{\"Spot\":[";
+         for (int i=0; i < _MyShotSpots.Count; i++)
+         {
+            json += JsonUtility.ToJson(_MyShotSpots[i]);
+            if (!(i == _MyShotSpots.Count-1)) {
+                json += ",";
+            }
+            
+         }
+        json += "]}";
         StreamWriter file = new StreamWriter( path);
         file.Write(json);
         file.Close();
@@ -89,8 +92,10 @@ public class CameraSpot
     private List<Spot> FromJson(string path)
     {
 
-        string stream = new FileStream(path, FileMode.Open).ToString();
-        _MyShotSpots = JsonUtility.FromJson<List<Spot>>(stream);
+        string text = System.IO.File.ReadAllText(path);
+
+        _MyShotSpots = JsonUtility.FromJson<List<Spot>>(text);
+        Debug.Log( _MyShotSpots.Count);
         return _MyShotSpots;
     }
     #endregion
