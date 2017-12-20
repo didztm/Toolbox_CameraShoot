@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ public class CameraShot : EditorWindow
 
     #endregion
     public Transform editorCam;
+    public List<Transform> _MyShotSpots=new List<Transform>();
 
     #region Public void
 
@@ -25,12 +27,29 @@ public class CameraShot : EditorWindow
     }
     private void OnGUI()
     {
-        editorCam = GetEditorCamera(SceneView.GetAllSceneCameras());
 
         if (GUILayout.Button("Shot"))
         {
-            DoShot();
+            Transform curCam = GetEditorCamera(SceneView.GetAllSceneCameras());
+            editorCam = curCam;
+            DoShot( curCam);
+            
+            
         }
+    }
+    private void ToJson()
+    {
+
+    }
+
+    private List<Transform> FromJson(string path) {
+
+       string stream = new FileStream(path, FileMode.Open).ToString();
+
+        _MyShotSpots= JsonUtility.FromJson<List<Transform>>(stream);
+
+
+        return _MyShotSpots;
     }
     private void OnFocus()
     {
@@ -39,9 +58,16 @@ public class CameraShot : EditorWindow
     #endregion
 
     #region Tools Debug and Utility
-    public Transform DoShot()
+    public List<Transform> DoShot(Transform _curCam)
     {
-        return editorCam;
+        if (editorCam.position != _curCam.position && editorCam.rotation != _curCam.rotation)
+        {
+            editorCam = _curCam;
+            _MyShotSpots.Add(editorCam);
+        }
+        
+        return _MyShotSpots;
+       
     }
     private Transform GetEditorCamera(Camera[] _cams)
     {
@@ -56,6 +82,7 @@ public class CameraShot : EditorWindow
 
         return null;
     }
+
     #endregion
 
 
